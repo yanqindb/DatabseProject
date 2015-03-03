@@ -130,51 +130,101 @@ public class BTree<Key extends Comparable<Key>, Value>  {
             t.children[j] = h.children[M/2+j]; 
         return t;    
     }
-    private void remove(Key key, Value value){
+    private void remove(Key key){
    	//first locate that entry, then judege: if node.m>=M/2, then shift; else has to merge with neibours.
-    	 Node u = delete(root, key, value, HT); 
+    	 Node u = delete(root, key,  HT); 
     	 N--;
     	 if (u == null) return;
     	 //need to merge root
+    	 else 
+    	 {
+    		root.m--;
+    	 }
 
     }
-    private Node delete(Node h, Key key, Value value, int ht){
-    //if key
-    	int j;
-        Entry t = new Entry(key, value, null);
+    private Node delete(Node h, Key key, int ht){
+    	 Entry[] children = h.children;
+    	 int j;
+         // external node
+         if (ht == 0) {
+             for (j = 0; j < h.m; j++) {
+                 if (eq(key, children[j].key))
+                	 break;
+             }
+         }
 
-        // external node
-        if (ht == 0) {
-            for (j = 0; j < h.m; j++) {
-                if (less(key, h.children[j].key)) break;
-            }
-        }
+         // internal node
+         else {
+             for (j = 0; j < h.m; j++) {
+                 if (j+1 == h.m || less(key, children[j+1].key))
+                      {
+                	 	Node u=delete(children[j].next, key,  ht-1);
+                        if(u==null) return null;
+                        else{
+                        	//try to borrow from neighbours
+                        	// j is next to u
+                        	if(children[j+1]!=null&&children[j+1].next.m>M/2){
+                        		//borrow from neighbour
+                        		
+                        		children[j].next.children[children[j].next.m]=children[j+1].next.children[0];
+                        		children[j].next.m++;
+                        		for(int i=1;i<children[j+1].next.m;i++){
+                        			children[j+1].next.children[i-1]=children[j+1].next.children[i];
+                        		}
+                        		children[j+1].next.m--;
+                        		children[j+1].key=children[j+1].next.children[0].key;
+                        		return null;
+                        	}
+                        	//borrowing fails, try to merge j and j+1, return merge node j
+                        	//first delete that element
+                        	if(children[j+1]!=null&&children[j+1].next.m<=M/2)
+                        	{Node v=merge( children[j],children[j+1]);
+                        	return v;
+                        	}
+                        	if(j-1>=0&&children[j-1].next.m>M/2){
+                        		//borrow from neighbour
+                        		Entry e=children[j-1].next.children[children[j-1].next.m-1];//borrowed
+                        		for(int i=children[j].next.m-1;i>=0;i--){
+                        			children[j].next.children[i]=children[j].next.children[i+1];
+                        		}
+                        		children[j].next.children[0]=e;
+                        		children[j].next.m++;
+                        		children[j].key=e.key;
+                        		children[j-1].next.m--;
+                        	}
+                        	//borrowing fails, try to merge j and j+1, return merge node j
+                        	//first delete that element
+                        	if(j-1>=0&&children[j-1].next.m<=M/2)
+                        	{Node v=merge( children[j-1],children[j]);
+                        	return v;
+                        	}
+                        }
+                        
+                    }
+             }
+         }
+        
+    	
 
-        // internal node
-        else {
-            for (j = 0; j < h.m; j++) {
-                if ((j+1 == h.m) || less(key, h.children[j+1].key)) {
-                    Node u = insert(h.children[j++].next, key, value, ht-1);
-                    if (u == null) return null;
-                    t.key = u.children[0].key;
-                    t.next = u;
-                    break;
-                }
-            }
-        }
-        if(h.m<=M/2){
-        	//merge
-        }
-        for (int i = h.m; i > j; i--) h.children[i] = h.children[i-1];
-        h.children[j] = t;
-        h.m++;
-        if (h.m < M) return null;
-        else         return split(h);
+        
+        //h.children[j] = ;
+        for (int i = j; i <h.m-1; i++)
+         	h.children[i] = h.children[i+1];
+         	h.m--;
+        if (h.m >= M/2) 	
+        	return null;
+        	
+        else  return h;
     }
-//    private Node merge(Node h,int mergePoint){
-//
-//         
-//    }
+    private Node merge( Entry children, Entry children2){
+    	int i;  
+    	for(i=0;i<children2.next.m;i++){
+    		  children.next.children[children.next.m+i]=children2.next.children[i];	  
+    	  }
+    	  children.next.m+=i;
+    	  return children.next;
+    	  
+    }
     // for debugging
     public String toString() {
         return toString(root, HT, "") + "\n";
@@ -218,33 +268,34 @@ public class BTree<Key extends Comparable<Key>, Value>  {
             st.put("www.cs.princeton.edu", "128.112.136.11");
             st.put("www.princeton.edu",    "128.112.128.15");
         st.put("www.yale.edu",         "130.132.143.21");
-        st.put("www.simpsons.com",     "209.052.165.60");
-        st.put("www.apple.com",        "17.112.152.32");
-        st.put("www.amazon.com",       "207.171.182.16");
-        st.put("www.ebay.com",         "66.135.192.87");
-        st.put("www.cnn.com",          "64.236.16.20");
-        st.put("www.google.com",       "216.239.41.99");
-        st.put("www.nytimes.com",      "199.239.136.200");
-        st.put("www.microsoft.com",    "207.126.99.140");
-        st.put("www.dell.com",         "143.166.224.230");
-        st.put("www.slashdot.org",     "66.35.250.151");
-        st.put("www.espn.com",         "199.181.135.201");
-        st.put("www.weather.com",      "63.111.66.11");
-        st.put("www.yahoo.com",        "216.109.118.65");
-
-
-        System.out.println("cs.princeton.edu:  " + st.get("www.cs.princeton.edu"));
-        System.out.println("hardvardsucks.com: " + st.get("www.harvardsucks.com"));
-        System.out.println("simpsons.com:      " + st.get("www.simpsons.com"));
-        System.out.println("apple.com:         " + st.get("www.apple.com"));
-        System.out.println("ebay.com:          " + st.get("www.ebay.com"));
-        System.out.println("dell.com:          " + st.get("www.dell.com"));
-        System.out.println();
-
-        System.out.println("size:    " + st.size());
-        System.out.println("height:  " + st.height());
+        st.remove("www.yale.edu");
+//        st.put("www.simpsons.com",     "209.052.165.60");
+//        st.put("www.apple.com",        "17.112.152.32");
+//        st.put("www.amazon.com",       "207.171.182.16");
+//        st.put("www.ebay.com",         "66.135.192.87");
+//        st.put("www.cnn.com",          "64.236.16.20");
+//        st.put("www.google.com",       "216.239.41.99");
+//        st.put("www.nytimes.com",      "199.239.136.200");
+//        st.put("www.microsoft.com",    "207.126.99.140");
+//        st.put("www.dell.com",         "143.166.224.230");
+//        st.put("www.slashdot.org",     "66.35.250.151");
+//        st.put("www.espn.com",         "199.181.135.201");
+//        st.put("www.weather.com",      "63.111.66.11");
+//        st.put("www.yahoo.com",        "216.109.118.65");
+//
+//
+//        System.out.println("cs.princeton.edu:  " + st.get("www.cs.princeton.edu"));
+//        System.out.println("hardvardsucks.com: " + st.get("www.harvardsucks.com"));
+//        System.out.println("simpsons.com:      " + st.get("www.simpsons.com"));
+//        System.out.println("apple.com:         " + st.get("www.apple.com"));
+//        System.out.println("ebay.com:          " + st.get("www.ebay.com"));
+//        System.out.println("dell.com:          " + st.get("www.dell.com"));
+//        System.out.println();
+//
+//        System.out.println("size:    " + st.size());
+//        System.out.println("height:  " + st.height());
         System.out.println(st);
-        System.out.println();
+//        System.out.println();
 
     }
 
