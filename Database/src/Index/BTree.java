@@ -1,27 +1,30 @@
 package Index;
 
 /*************************************************************************
- *  Compilation:  javac BTree.java
- *  Execution:    java BTree
- *
- *  B-tree.
- *
- *  Limitations
- *  -----------
- *   -  Assumes M is even and M >= 4
- *   -  should b be an array of children or list (it would help with
- *      casting to make it a list)
+ * 
+ *	Author: Zishan Qin & Yan Wang 
+ *	
+ *  Project2: Index
+ *  
+ *  Implementation choice: B+ tree
+ *  
+ *  Data source: NSF Research Awards Abstracts 1990-2003(ICS Department, School of Computer Science, UCI, Irvine CA, 92697, USA),
+ *  part3-a list of words for indexing the bag-of-word data.
  *
  *************************************************************************/
 
+/***
+ * @param <Key>: Key type, Java Generics, can be assigned a type(Integer/String/...)
+ * @param <Value>: Value type, Java Generics, can be assigned a type(Integer/String/...)
+ */
 
 public class BTree<Key extends Comparable<Key>, Value>  {
-    private static final int M = 4;    // max children per B-tree node = M-1
+    private static final int M = 10;    // max children per B-tree node = M-1
 
     private Node root;             // root of the B-tree
     private int HT;                // height of the B-tree
     private int N;                 // number of key-value pairs in the B-tree
-
+    private boolean notifyFlag = false;
     // helper B-tree node data type
     private static final class Node {
         private int m;                             // number of children
@@ -42,18 +45,31 @@ public class BTree<Key extends Comparable<Key>, Value>  {
         }
     }
 
-    // constructor
+    /**
+     * constructor
+     */
     public BTree() { root = new Node(0); }
  
-    // return number of key-value pairs in the B-tree
+    /**
+     * 
+     * @return number of key-value pairs in the B-tree
+     */
     public int size() { return N; }
-
-    // return height of B-tree
+ 
+    /**
+     *
+     * @return height of B-tree
+     */
     public int height() { return HT; }
 
 
-    // search for given key, return associated value; return null if no such key
-    public Value get(Key key) { return search(root, key, HT); }
+    
+    /**
+     * 
+     * @param key given by caller
+     * @return associated value; return null if no such key
+     */
+    public synchronized Value get(Key key) { return search(root, key, HT); }
     private Value search(Node x, Key key, int ht) {
         Entry[] children = x.children;
 
@@ -75,9 +91,12 @@ public class BTree<Key extends Comparable<Key>, Value>  {
     }
 
 
-    // insert key-value pair
-    // add code to check for duplicate keys
-    public void put(Key key, Value value) {
+    /**
+     * insert key-value pair
+     * @param key
+     * @param value
+     */
+    public synchronized void put(Key key, Value value) {
         Node u = insert(root, key, value, HT); 
         N++;
         if (u == null) return;
@@ -90,7 +109,15 @@ public class BTree<Key extends Comparable<Key>, Value>  {
         HT++;
     }
 
-
+    
+    /**
+     * insert helper method
+     * @param h: node being inserted
+     * @param key
+     * @param value
+     * @param ht: height of tree
+     * @return
+     */
     private Node insert(Node h, Key key, Value value, int ht) {
         int j;
         Entry t = new Entry(key, value, null);
@@ -122,7 +149,12 @@ public class BTree<Key extends Comparable<Key>, Value>  {
         else         return split(h);
     }
 
-    // split node in half
+     
+    /**
+     * split node in half
+     * @param h: the node h is splited into 2 parts
+     * @return new node with half elements of h
+     */
     private Node split(Node h) {
         Node t = new Node(M/2);
         h.m = M/2;
@@ -130,18 +162,33 @@ public class BTree<Key extends Comparable<Key>, Value>  {
             t.children[j] = h.children[M/2+j]; 
         return t;    
     }
-    private void remove(Key key){
-   	//first locate that entry, then judege: if node.m>=M/2, then shift; else has to merge with neibours.
+     
+    /**
+     * remove key-value pair according to Key
+     * @param key
+     */
+    synchronized void remove(Key key){
+    	//first locate that entry, then judge: if node.m>=M/2, then shift; else has to merge with neibours.
     	 Node u = delete(root, key,  HT); 
     	 N--;
     	 if (u == null) return;
     	 //need to merge root
     	 else 
     	 {
-    		root.m--;
+    		 Node t=new Node(1);
+    		t.children[0]=new Entry(root.children[0].key, null, root.children[0].next);
+    		root=t;
     	 }
 
     }
+    
+    /**
+     * remove helper function
+     * @param h
+     * @param key
+     * @param ht
+     * @return
+     */
     private Node delete(Node h, Key key, int ht){
     	 Entry[] children = h.children;
     	 int j;
@@ -160,11 +207,12 @@ public class BTree<Key extends Comparable<Key>, Value>  {
                       {
                 	 	Node u=delete(children[j].next, key,  ht-1);
                         if(u==null) return null;
-                        else{
+                        else {
+                        	if(u.m<M/2){
                         	//try to borrow from neighbours
                         	// j is next to u
                         	if(children[j+1]!=null&&children[j+1].next.m>M/2){
-                        		//borrow from neighbour
+                        		//borrow from neighbour, move the first item from next child and add to this child
                         		
                         		children[j].next.children[children[j].next.m]=children[j+1].next.children[0];
                         		children[j].next.m++;
@@ -175,12 +223,9 @@ public class BTree<Key extends Comparable<Key>, Value>  {
                         		children[j+1].key=children[j+1].next.children[0].key;
                         		return null;
                         	}
-                        	//borrowing fails, try to merge j and j+1, return merge node j
+                        	//borrowing fails, try to merge j and j-1, return merge node j
                         	//first delete that element
-                        	if(children[j+1]!=null&&children[j+1].next.m<=M/2)
-                        	{Node v=merge( children[j],children[j+1]);
-                        	return v;
-                        	}
+
                         	if(j-1>=0&&children[j-1].next.m>M/2){
                         		//borrow from neighbour
                         		Entry e=children[j-1].next.children[children[j-1].next.m-1];//borrowed
@@ -191,23 +236,38 @@ public class BTree<Key extends Comparable<Key>, Value>  {
                         		children[j].next.m++;
                         		children[j].key=e.key;
                         		children[j-1].next.m--;
+                        		return null;
                         	}
                         	//borrowing fails, try to merge j and j+1, return merge node j
                         	//first delete that element
-                        	if(j-1>=0&&children[j-1].next.m<=M/2)
-                        	{Node v=merge( children[j-1],children[j]);
+                        	if(children[j+1]!=null&&children[j+1].next.m<=M/2)
+                        	{Node v=merge( children[j],children[j+1]);
+	                        	for(int i=h.m-1;i>j+1;i--){
+	                    			children[i-1]=children[i];
+	                    		}
+	                    		h.m--;
                         	return v;
                         	}
+                        	if(children[j+1]==null&&children[j-1].next.m<=M/2)//j is the last entry
+                        	{
+                        		Node v=merge( children[j-1],children[j]);
+                        		h.m--;
+                        	return v;
+                        	}
+                        	break;
+                        }
+                        else{
+                        	//at this point, the B+tree features are satisfied
+                        	return null;
+                        }
+                        	
                         }
                         
                     }
              }
          }
         
-    	
-
-        
-        //h.children[j] = ;
+    	//shift items and decrement the size
         for (int i = j; i <h.m-1; i++)
          	h.children[i] = h.children[i+1];
          	h.m--;
@@ -216,6 +276,13 @@ public class BTree<Key extends Comparable<Key>, Value>  {
         	
         else  return h;
     }
+    
+    /**
+     * remove helper function, merge two entries children and children23
+     * @param children
+     * @param children2
+     * @return
+     */
     private Node merge( Entry children, Entry children2){
     	int i;  
     	for(i=0;i<children2.next.m;i++){
@@ -225,10 +292,16 @@ public class BTree<Key extends Comparable<Key>, Value>  {
     	  return children.next;
     	  
     }
-    // for debugging
+    
+	/**
+	 * for debugging
+	 */
     public String toString() {
         return toString(root, HT, "") + "\n";
     }
+    /**
+	 *  debugging helper function
+	 */
     private String toString(Node h, int ht, String indent) {
         String s = "";
         Entry[] children = h.children;
@@ -248,55 +321,23 @@ public class BTree<Key extends Comparable<Key>, Value>  {
     }
 
 
-    // comparison functions - make Comparable instead of Key to avoid casts
+     
+    /**
+     * comparison functions - make Comparable instead of Key to avoid casts
+     * @param k1
+     * @param k2
+     * @return k1 less than k2
+     */
     private boolean less(Comparable k1, Comparable k2) {
         return k1.compareTo(k2) < 0;
     }
-
+    /**
+     * used for search and delete
+     * @param k1
+     * @param k2
+     * @return k1 equals to k2
+     */
     private boolean eq(Comparable k1, Comparable k2) {
         return k1.compareTo(k2) == 0;
     }
-
-
-   /*************************************************************************
-    *  test client
-    *************************************************************************/
-    public static void main(String[] args) {
-        BTree<String, String> st = new BTree<String, String>();
-
-      st.put("www.cs.princeton.edu", "128.112.136.12");
-            st.put("www.cs.princeton.edu", "128.112.136.11");
-            st.put("www.princeton.edu",    "128.112.128.15");
-        st.put("www.yale.edu",         "130.132.143.21");
-        st.remove("www.yale.edu");
-//        st.put("www.simpsons.com",     "209.052.165.60");
-//        st.put("www.apple.com",        "17.112.152.32");
-//        st.put("www.amazon.com",       "207.171.182.16");
-//        st.put("www.ebay.com",         "66.135.192.87");
-//        st.put("www.cnn.com",          "64.236.16.20");
-//        st.put("www.google.com",       "216.239.41.99");
-//        st.put("www.nytimes.com",      "199.239.136.200");
-//        st.put("www.microsoft.com",    "207.126.99.140");
-//        st.put("www.dell.com",         "143.166.224.230");
-//        st.put("www.slashdot.org",     "66.35.250.151");
-//        st.put("www.espn.com",         "199.181.135.201");
-//        st.put("www.weather.com",      "63.111.66.11");
-//        st.put("www.yahoo.com",        "216.109.118.65");
-//
-//
-//        System.out.println("cs.princeton.edu:  " + st.get("www.cs.princeton.edu"));
-//        System.out.println("hardvardsucks.com: " + st.get("www.harvardsucks.com"));
-//        System.out.println("simpsons.com:      " + st.get("www.simpsons.com"));
-//        System.out.println("apple.com:         " + st.get("www.apple.com"));
-//        System.out.println("ebay.com:          " + st.get("www.ebay.com"));
-//        System.out.println("dell.com:          " + st.get("www.dell.com"));
-//        System.out.println();
-//
-//        System.out.println("size:    " + st.size());
-//        System.out.println("height:  " + st.height());
-        System.out.println(st);
-//        System.out.println();
-
-    }
-
 }
