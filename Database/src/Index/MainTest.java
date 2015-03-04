@@ -109,6 +109,11 @@ public class MainTest<Key extends Comparable<Key>, Value> {
 	            
 	            //Test2: Multithreads concurrency
 	            System.out.println();
+	            System.out.println("############ Test Get Function based on Value ##############");
+	            MainTest<String,String> main=new  MainTest<String,String>();
+	            System.out.println("Test Get(Value value) function" );
+	            System.out.println("Get record with Value (a0074797): Key-"+main.get("a0074797"));
+	            System.out.println();
 	            System.out.println("############ Test Multithreads #############################");
 
 	            new GetClient( "ThreadGet" ,st, "96697");
@@ -119,11 +124,9 @@ public class MainTest<Key extends Comparable<Key>, Value> {
 	            new GetClient( "ThreadGet" ,st, "96697");
 	            new GetClient( "ThreadGet" ,st, "96697");
 	            //Teest3: Get Function based on Value
-	            System.out.println();
-	            System.out.println("############ Test Get Function based on Value ##############");
-	            MainTest<String,String> main=new  MainTest<String,String>();
-	            System.out.println("Test Get(Value value) function" );
-	            System.out.println("Get record with Value (100010):");
+	           
+	            
+	            
 	        } catch (IOException e) {
 	            e.printStackTrace();
 	        } finally {
