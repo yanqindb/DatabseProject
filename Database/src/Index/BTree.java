@@ -22,18 +22,26 @@ public class BTree<Key extends Comparable<Key>, Value>  {
     private static final int M = 10;    // max children per B-tree node = M-1
 
     private Node root;             // root of the B-tree
-    private int HT;                // height of the B-tree
-    private int N;                 // number of key-value pairs in the B-tree
-    private boolean notifyFlag = false;
-    // helper B-tree node data type
+    private int Height;                // height of the B-tree
+    private int RecordsSize;                 // number of key-value pairs in the B-tree
+    
+    /**
+     * 
+     * Node is used for maintaining size information and entries 
+     *
+     */
     private static final class Node {
         private int m;                             // number of children
         private Entry[] children = new Entry[M];   // the array of children
         private Node(int k) { m = k; }             // create a node with k children
     }
 
-    // internal nodes: only use key and next
-    // external nodes: only use key and value
+    /**
+     * internal nodes: only use key and next
+     * external nodes: only use key and value
+     * @author zqin
+     *
+     */
     private static class Entry {
         private Comparable key;
         private Object value;
@@ -54,13 +62,13 @@ public class BTree<Key extends Comparable<Key>, Value>  {
      * 
      * @return number of key-value pairs in the B-tree
      */
-    public int size() { return N; }
+    public int size() { return this.RecordsSize; }
  
     /**
      *
      * @return height of B-tree
      */
-    public int height() { return HT; }
+    public int height() { return Height; }
 
 
     
@@ -69,7 +77,7 @@ public class BTree<Key extends Comparable<Key>, Value>  {
      * @param key given by caller
      * @return associated value; return null if no such key
      */
-    public synchronized Value get(Key key) { return search(root, key, HT); }
+    public synchronized Value get(Key key) { return search(root, key, Height); }
     private Value search(Node x, Key key, int ht) {
         Entry[] children = x.children;
 
@@ -97,8 +105,8 @@ public class BTree<Key extends Comparable<Key>, Value>  {
      * @param value
      */
     public synchronized void put(Key key, Value value) {
-        Node u = insert(root, key, value, HT); 
-        N++;
+        Node u = insert(root, key, value, Height); 
+        this.RecordsSize++;
         if (u == null) return;
 
         // need to split root
@@ -106,7 +114,7 @@ public class BTree<Key extends Comparable<Key>, Value>  {
         t.children[0] = new Entry(root.children[0].key, null, root);
         t.children[1] = new Entry(u.children[0].key, null, u);
         root = t;
-        HT++;
+        Height++;
     }
 
     
@@ -118,13 +126,14 @@ public class BTree<Key extends Comparable<Key>, Value>  {
      * @param ht: height of tree
      * @return
      */
-    private Node insert(Node h, Key key, Value value, int ht) {
+    private Node insert(Node h, Key key, Value value, int height) {
         int j;
         Entry t = new Entry(key, value, null);
 
-        // external node
-        if (ht == 0) {
+        // external node: when height ==0
+        if (height == 0) {
             for (j = 0; j < h.m; j++) {
+            	//we find the place we need to insert record, and it is leaves layer,okay to insert
                 if (less(key, h.children[j].key)) break;
             }
         }
@@ -132,8 +141,12 @@ public class BTree<Key extends Comparable<Key>, Value>  {
         // internal node
         else {
             for (j = 0; j < h.m; j++) {
+            	//check each key in this node's entries
                 if ((j+1 == h.m) || less(key, h.children[j+1].key)) {
-                    Node u = insert(h.children[j++].next, key, value, ht-1);
+                	//key is less than the j+1 entry, so we need to insert to the place under j entry
+                	//recursively find the appropriate entry layer by layer
+                	//until hit the leaves 
+                    Node u = insert(h.children[j++].next, key, value, height-1);
                     if (u == null) return null;
                     t.key = u.children[0].key;
                     t.next = u;
@@ -141,11 +154,13 @@ public class BTree<Key extends Comparable<Key>, Value>  {
                 }
             }
         }
-
+        //we need to shift records which keys value are bigger than key to right with one spot
         for (int i = h.m; i > j; i--) h.children[i] = h.children[i-1];
         h.children[j] = t;
         h.m++;
+        //the node isn't full,done!
         if (h.m < M) return null;
+        //node is full, need to split into two nodes
         else         return split(h);
     }
 
@@ -169,8 +184,8 @@ public class BTree<Key extends Comparable<Key>, Value>  {
      */
     synchronized void remove(Key key){
     	//first locate that entry, then judge: if node.m>=M/2, then shift; else has to merge with neibours.
-    	 Node u = delete(root, key,  HT); 
-    	 N--;
+    	 Node u = delete(root, key,  Height); 
+    	 this.RecordsSize--;
     	 if (u == null) return;
     	 //need to merge root
     	 else 
@@ -297,7 +312,7 @@ public class BTree<Key extends Comparable<Key>, Value>  {
 	 * for debugging
 	 */
     public String toString() {
-        return toString(root, HT, "") + "\n";
+        return toString(root, Height, "") + "\n";
     }
     /**
 	 *  debugging helper function
