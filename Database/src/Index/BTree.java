@@ -1,5 +1,10 @@
 package Index;
 
+
+
+import java.util.ArrayList;
+import java.util.Queue;
+
 /*************************************************************************
  * 
  *	Author: Zishan Qin & Yan Wang 
@@ -19,12 +24,12 @@ package Index;
  */
 
 public class BTree<Key extends Comparable<Key>, Value>  {
-    private static final int M = 10;    // max children per B-tree node = M-1
+    private static final int M = 8;    // max children per B-tree node = M-1
 
     private Node root;             // root of the B-tree
     private int Height;                // height of the B-tree
     private int RecordsSize;                 // number of key-value pairs in the B-tree
-    
+    private ArrayList<Node> LeavsesList;	//Link all Leaves nodes together
     /**
      * 
      * Node is used for maintaining size information and entries 
@@ -39,13 +44,13 @@ public class BTree<Key extends Comparable<Key>, Value>  {
     /**
      * internal nodes: only use key and next
      * external nodes: only use key and value
-     * @author zqin
      *
      */
     private static class Entry {
         private Comparable key;
         private Object value;
         private Node next;     // helper field to iterate over array entries
+        private Node parent;	//helper field to retrieve parent node
         public Entry(Comparable key, Object value, Node next) {
             this.key   = key;
             this.value = value;
@@ -56,7 +61,10 @@ public class BTree<Key extends Comparable<Key>, Value>  {
     /**
      * constructor
      */
-    public BTree() { root = new Node(0); }
+    public BTree() { 
+    	root = new Node(0);
+    	LeavsesList=new ArrayList<Node>();
+    }
  
     /**
      * 
@@ -78,6 +86,7 @@ public class BTree<Key extends Comparable<Key>, Value>  {
      * @return associated value; return null if no such key
      */
     public synchronized Value get(Key key) { return search(root, key, Height); }
+   
     private Value search(Node x, Key key, int ht) {
         Entry[] children = x.children;
 
@@ -112,8 +121,11 @@ public class BTree<Key extends Comparable<Key>, Value>  {
         // need to split root
         Node t = new Node(2);
         t.children[0] = new Entry(root.children[0].key, null, root);
+        t.children[0].parent=t;
         t.children[1] = new Entry(u.children[0].key, null, u);
+        t.children[1].parent=t;
         root = t;
+        
         Height++;
     }
 
@@ -157,7 +169,9 @@ public class BTree<Key extends Comparable<Key>, Value>  {
         //we need to shift records which keys value are bigger than key to right with one spot
         for (int i = h.m; i > j; i--) h.children[i] = h.children[i-1];
         h.children[j] = t;
+        t.parent=h;
         h.m++;
+       
         //the node isn't full,done!
         if (h.m < M) return null;
         //node is full, need to split into two nodes
@@ -196,7 +210,34 @@ public class BTree<Key extends Comparable<Key>, Value>  {
     	 }
 
     }
-    
+/**
+ * remove according to Value, because we have only one clustterd index on key,
+ * if the attribute is not key, we have to iterate on all tuples
+ * We keep the leaves list in the tree
+ * @param val
+ * @return
+ */
+	public synchronized ArrayList<Key> remove(Value val) {
+    	ArrayList<Key> result=new ArrayList<Key>();
+    	int size=this.LeavsesList.size();
+    	 //iterate all leaf nodes, compare each record's value with val
+    	for(int i=0;i<size;i++){
+    		Node current=this.LeavsesList.get(i);
+    		int m=current.m;
+    		for(int j=0;j<m;j++){
+    			if(current.children[j].value.equals(val)){
+    				
+    				
+    				result.add((Key) current.children[j].key);
+    				
+    			}
+    		}
+    	}
+    	for(int i=0;i<result.size();i++){
+    		this.remove(result.get(i));
+    	}
+    	return result;
+    }
     /**
      * remove helper function
      * @param h
@@ -355,4 +396,89 @@ public class BTree<Key extends Comparable<Key>, Value>  {
     private boolean eq(Comparable k1, Comparable k2) {
         return k1.compareTo(k2) == 0;
     }
+     void buildLeavesList(){
+//    	//search for the leftmost Leaf-node: 
+//    	//1.Ht=0
+//    	//2.key is smallest
+//    	int ht=this.Height;
+//    	Node n=this.root;
+//    	while(ht>0){
+//    		n=n.children[0].next;
+//    		ht--;
+//    	}
+//    	this.LeavsesList=new ArrayList<Node>();
+//    	this.LeavsesList.add(n);
+    	//use 2 rolling queues and store each layer in idle queue, when ht==0, we can begin to add those nodes into list
+    	
+		ArrayList<Node> currentNodeList=new ArrayList<Node>();
+		ArrayList<Node> parentNodeList=new ArrayList<Node>();
+		parentNodeList.add(root);
+		int ht=this.Height;
+		while(ht>0){
+			for(int i=0;i<parentNodeList.size();i++){
+				for(int j=0;j<parentNodeList.get(i).m;j++){
+					currentNodeList.add(parentNodeList.get(i).children[j].next);
+				}
+			}
+			ht--;
+			if(ht==0) break;
+			ArrayList<Node> temp;
+			temp=new ArrayList<Node>(currentNodeList);
+			parentNodeList=temp;
+			currentNodeList.clear();		
+		}
+    	this.LeavsesList=currentNodeList;
+    	
+    }
+//    public static void main(String[] args) {
+//        BTree<String, String> st = new BTree<String, String>();
+//
+////      st.put("www.cs.princeton.edu", "128.112.136.12");
+//        st.put("www.cs.princeton.edu", "128.112.136.11");
+//        st.put("www.princeton.edu",    "128.112.128.15");
+//        st.put("www.yale.edu",         "130.132.143.21");
+//        st.put("www.simpsons.com",     "209.052.165.60");
+//        st.put("www.apple.com",        "17.112.152.32");
+//        st.put("www.amazon.com",       "207.171.182.16");
+//        st.put("www.ebay.com",         "66.135.192.87");
+//        st.put("www.cnn.com",          "64.236.16.20");
+//        st.put("www.google.com",       "216.239.41.99");
+//        st.put("www.nytimes.com",      "199.239.136.200");
+//        st.put("www.microsoft.com",    "207.126.99.140");
+//        st.put("www.dell.com",         "143.166.224.230");
+//        st.put("www.slashdot.org",     "66.35.250.151");
+//        st.put("www.espn.com",         "199.181.135.201");
+//        st.put("www.weather.com",      "63.111.66.11");
+//        st.put("www.yahoo.com",        "216.109.118.65");
+//        st.put("www.cs.princeton.edu", "128.112.136.11");
+//        st.put("www.princeton.edu",    "128.112.128.15");
+//        st.put("www.yale.edu",         "130.132.143.21");
+//        st.put("www.simpsons.com",     "209.052.165.60");
+//        st.put("www.apple.com",        "17.112.152.32");
+//        st.put("www.amazon.com",       "207.171.182.16");
+//        st.put("www.ebay.com",         "66.135.192.87");
+//        st.put("www.cnn.com",          "64.236.16.20");
+//        st.put("www.google.com",       "216.239.41.99");
+//        st.put("www.nytimes.com",      "199.239.136.200");
+//        st.put("www.microsoft.com",    "207.126.99.140");
+//        st.put("www.dell.com",         "143.166.224.230");
+//        st.put("www.slashdot.org",     "66.35.250.151");
+//        st.put("www.espn.com",         "199.181.135.201");
+//        st.put("www.weather.com",      "63.111.66.11");
+//        st.put("www.yahoo.com",        "216.109.118.65");
+//        st.buildLeavesList();
+//
+//        System.out.println("cs.princeton.edu:  " + st.get("www.cs.princeton.edu"));
+//        System.out.println("hardvardsucks.com: " + st.get("www.harvardsucks.com"));
+//        System.out.println("simpsons.com:      " + st.get("www.simpsons.com"));
+//        System.out.println("apple.com:         " + st.get("www.apple.com"));
+//        System.out.println("ebay.com:          " + st.get("www.ebay.com"));
+//        System.out.println("dell.com:          " + st.get("www.dell.com"));
+//        System.out.println();
+//
+//        System.out.println("size:    " + st.size());
+//        System.out.println("height:  " + st.height());
+//        System.out.println(st);
+//        System.out.println();
+//    }
 }
