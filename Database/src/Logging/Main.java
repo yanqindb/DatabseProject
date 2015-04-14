@@ -58,17 +58,17 @@ public  static Relation loadFile( String tabelName, Log log) {
 			
 			r=relation.records.get(count);
 			Record oldRec=new Record(r);
-			String oldValue= ((String) r.value.get(FieldIndex)).replaceAll("\"", "");
+			String oldValue= ((String) r.value.get(FieldIndex)).replaceAll("/", "");
 			double old=Double.parseDouble(oldValue);
 			int newV=(int) Math.round(old*factor);
-			String newValue="\""+newV+"\"";
+			String newValue=""+newV+"";
 			ArrayList updateColumns=new ArrayList();
 			updateColumns.add(FieldIndex);
 			ArrayList updateValues=new ArrayList();
 			updateValues.add(newValue);
 			updateT=new UpdateTransaction(relation,updateColumns ,count, updateValues);
-			LogItem item=new LogItem(updateT.TransactionID,relation.relationName+"\\"
-					+count+"\\"+FieldIndex,oldRec,r); 
+			LogItem item=new LogItem(updateT.TransactionID,relation.relationName+"/"
+					+count+"/"+FieldIndex,oldRec,r); 
 			log.addLog(item);
 			count++;
 		}
@@ -80,7 +80,7 @@ public  static Relation loadFile( String tabelName, Log log) {
 		//Relation city
 		Log log=new Log();
 		Relation city = null ;
-		city=loadFile("City.csv", log);
+		city=loadFile("CityTest.csv", log);
 		if(city==null){
 			loadLog();
 		}
@@ -98,8 +98,9 @@ public  static Relation loadFile( String tabelName, Log log) {
 		      catch(IOException e1) {
 		        System.out.println("Error during reading/writing");
 		   }
-		RecoveryBasedOnLog recovery=new RecoveryBasedOnLog("file.txt", "CityRecovery", "///");
+		RecoveryBasedOnLog recovery=new RecoveryBasedOnLog("file.txt", "CityRecovery", "CityRecovery1");
 		recovery.recovery();
+		
 	}
 	
 

@@ -23,7 +23,11 @@ class InsertTransaction extends Transaction{
 	}
 	public InsertTransaction(Relation relation, String[] split) {
 		// TODO Auto-generated constructor stub
+		relationInsertedTo=relation;
+		TransactionType="Insert";
+		generateID();
 		record=new Record(split);
+		insertRecord();
 	}
 	public void ParseRecord(String tempString){
 		 record=new Record(tempString.split(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)"));

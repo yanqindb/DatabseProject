@@ -45,14 +45,14 @@ public class RecoveryBasedOnLog {
 		String newValue=fields[3];
 		if(Type.equals("Insert")){
 			
-			InsertTransaction insertT=new InsertTransaction(relation, newValue.split("\\"));
+			InsertTransaction insertT=new InsertTransaction(relation, newValue.split("/"));
 		}
 		else if(Type.equals("Update")){
-			String[] updateLocation=fieldsUpdate.split("\\\\");
-			String[] updateValues=newValue.split("\\\\");
-			int row=Integer.parseInt(updateLocation[0]);
+			String[] updateLocation=fieldsUpdate.split("/");
+			String[] updateValues=newValue.split("/");
+			int row=Integer.parseInt(updateLocation[1]);
 			ArrayList<Integer>  columns=new ArrayList<Integer>();
-			for(int j=1;j<updateLocation.length;j++){
+			for(int j=2;j<updateLocation.length;j++){
 				columns.add(Integer.parseInt(updateLocation[j]));
 			}
 			ArrayList  values=new ArrayList();
@@ -67,6 +67,7 @@ public class RecoveryBasedOnLog {
 		for(String i: log){
 			parseLogToTransaction(i);
 		}
+		this.relation.writeBack();
 	}
 	
 }

@@ -164,6 +164,32 @@ class Relation{
 	public void addRecord(Record r){
 		this.records.add(r);
 	}
+	public String toString(){
+		String s="";
+		for(Record r:this.records){
+			for(int i=0;i<r.value.size();i++){
+				if(i<r.value.size()-1)
+					s+=r.value.get(i)+",";
+				else{
+					s+=r.value.get(i);
+				}
+			}
+			s+="\n";
+		}
+		return s;
+	}
+	public void writeBack(){
+
+		try {
+		      //create a buffered reader that connects to the console, we use it so we can read lines
+				FileWriter fw = new FileWriter(this.relationName+".txt");
+				fw.write(this.toString());
+				fw.close();
+		   }
+		      catch(IOException e1) {
+		        System.out.println("Error during reading/writing");
+		   }
+	}
 
 }
 
@@ -187,8 +213,9 @@ class Record {
 	public String  toString(){
 		String s = "";
 		for(Object o: value){
-			s+=o.toString()+"\\";
+			s+=o.toString()+"/";
 		}
 		return s;
 	}
+	
 }
