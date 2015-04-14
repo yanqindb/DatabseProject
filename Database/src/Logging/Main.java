@@ -2,9 +2,12 @@ package Logging;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.PrintWriter;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -45,8 +48,30 @@ public  static Relation loadFile( String tabelName, Log log) {
 		// TODO Auto-generated method stub
 		return true;
 	}
-	public void AnnualIncreaseTrigger(Relation relation, int FieldIndex){
-	
+	public static void AnnualIncreaseTrigger(Relation relation, int FieldIndex, Log log){
+		double factor=1.02;
+		int recordsSize=relation.records.size();
+		int count=0;
+		Record r;
+		UpdateTransaction updateT;
+		while(count<recordsSize){
+			
+			r=relation.records.get(count);
+			Record oldRec=new Record(r);
+			String oldValue= ((String) r.value.get(FieldIndex)).replaceAll("\"", "");
+			double old=Double.parseDouble(oldValue);
+			int newV=(int) Math.round(old*factor);
+			String newValue="\""+newV+"\"";
+			ArrayList updateColumns=new ArrayList();
+			updateColumns.add(FieldIndex);
+			ArrayList updateValues=new ArrayList();
+			updateValues.add(newValue);
+			updateT=new UpdateTransaction(relation,updateColumns ,count, updateValues);
+			LogItem item=new LogItem(updateT.TransactionID,relation.relationName+"\\"
+					+count+"\\"+FieldIndex,oldRec,r); 
+			log.addLog(item);
+			count++;
+		}
 		
 		
 	}
@@ -59,8 +84,22 @@ public  static Relation loadFile( String tabelName, Log log) {
 		if(city==null){
 			loadLog();
 		}
-		System.out.println(log);
 		
+		
+		AnnualIncreaseTrigger(city,4,log);
+		
+		//System.out.println(log.toString());
+		try {
+		      //create a buffered reader that connects to the console, we use it so we can read lines
+				FileWriter fw = new FileWriter("file.txt");
+				fw.write(log.toString());
+				fw.close();
+		   }
+		      catch(IOException e1) {
+		        System.out.println("Error during reading/writing");
+		   }
+		RecoveryBasedOnLog recovery=new RecoveryBasedOnLog("file.txt", "CityRecovery", "///");
+		recovery.recovery();
 	}
 	
 

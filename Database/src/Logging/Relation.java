@@ -39,7 +39,7 @@ class Relation{
 	
 
 	//Relation name
-	private String relationName = null;
+	public String relationName = null;
 	
 	//Length of the relation in bytes
 	private int length = 0;
@@ -70,7 +70,7 @@ class Relation{
 	 */
 	public Relation(String relationName){
 		
-		this.relationName = relationName;
+		this.relationName = relationName.split("\\.")[0];
 		
 	}
 	/**
@@ -170,7 +170,9 @@ class Relation{
 class Record {
 	ArrayList value;
 	
-
+	public Record(Record externalRecord){
+		value=(ArrayList) externalRecord.value.clone();
+	}
 	public Record(String[] split) {
 		// TODO Auto-generated constructor stub
 		value=new ArrayList();
@@ -179,8 +181,8 @@ class Record {
 		}
 	}
 	public void setValue(int col, Object o){
-		Object obj=value.get(col);
-		obj=o;
+		this.value.remove(col);
+		this.value.add(col,o);
 	}
 	public String  toString(){
 		String s = "";

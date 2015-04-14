@@ -7,7 +7,7 @@ public abstract class Transaction {
 	String TransactionType;
 	String TransactionID;
 	public void generateID(){
-		this.TransactionID=this.TransactionType+":"+UUID.randomUUID().toString();
+		this.TransactionID=this.TransactionType+"_"+UUID.randomUUID().toString();
 	}
 
 }
@@ -20,6 +20,10 @@ class InsertTransaction extends Transaction{
 		generateID();
 		ParseRecord(tempString);
 		insertRecord();
+	}
+	public InsertTransaction(Relation relation, String[] split) {
+		// TODO Auto-generated constructor stub
+		record=new Record(split);
 	}
 	public void ParseRecord(String tempString){
 		 record=new Record(tempString.split(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)"));
