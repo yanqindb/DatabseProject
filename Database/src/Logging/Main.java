@@ -14,15 +14,33 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 
+import sun.util.logging.resources.logging;
+
 public class Main {
-public  static Relation loadFile( String tabelName, Log log) {
+	/**
+	 *  read the file of data, and create relation
+	 * @param tableName
+	 * @param fs: fields name
+	 * @param log: need to write logs into this
+	 * @return relation created
+	 */
+public  static Relation loadFile( String tableName, ArrayList<String> fs, Log log) {
 		ObjectInputStream ois = null;
 		BufferedReader reader = null;
 		//Get the path of the relation
-		Path pathRelation = Paths.get(tabelName);
+		Path pathRelation = Paths.get(tableName);
 
 		//Open the relation file
-		Relation relation = new Relation(tabelName);
+		CreateTableTransaction creatT = new CreateTableTransaction(fs,tableName);
+		Relation relation=creatT.getRelation();
+		ArrayList<String> tableStructure=new ArrayList<String>(fs);
+		tableStructure.add(0,relation.relationName);
+		String structure="";
+		for(String str:tableStructure ){
+			structure+=str+"/";
+		}
+		LogItem createTtem=new LogItem(creatT.TransactionID,structure,null, null); 
+		log.addLog(createTtem);
 		try {		 
 			Charset charset=Charset.forName("UTF-8");;
 			reader = Files.newBufferedReader(pathRelation, charset);
@@ -44,11 +62,15 @@ public  static Relation loadFile( String tabelName, Log log) {
 		return relation;
 		
 	}
-	public static boolean loadLog() {
-		// TODO Auto-generated method stub
-		return true;
-	}
+	/**
+	 * function to multiply the population value by 1.02
+	 * these are update related transactions
+	 * @param relation
+	 * @param FieldIndex
+	 * @param log
+	 */
 	public static void AnnualIncreaseTrigger(Relation relation, int FieldIndex, Log log){
+		System.out.println("increase population by 2%");
 		double factor=1.02;
 		int recordsSize=relation.records.size();
 		int count=0;
@@ -75,32 +97,110 @@ public  static Relation loadFile( String tabelName, Log log) {
 		
 		
 	}
+	
 	public static void main(String[] args) {
-		
-		//Relation city
-		Log log=new Log();
-		Relation city = null ;
-		city=loadFile("CityTest.csv", log);
-		if(city==null){
-			loadLog();
+		//information needed for table City
+		String LogLacation="Log_6da543ca-7c0d-4308-87a3-4280de60abf0.txt";
+		String DatabaseLocation="CityTest.csv";
+		ArrayList<String> fields=new ArrayList<String>();
+		  String[] fs={"Code","Name","Country Code","District","Population"};
+		for(int i=0;i<fs.length;i++){
+			fields.add(fs[i]);
 		}
+		int increaseColoumn=4;
+		//Do operations:
+		 // Two cases:
+			 // case 1:if data in DatabaseLocation cannot be found, we can regarded this is a isolated machine and 
+			 // need to build relation from log
+			 // case 2: if data in DatabaseLocation can be found, we can build relation from data.
+			 // 		for this case, we need to create table, insert records, update by multiplying 1.02, and write logs
+			 // 		for all these operations
+		System.out.println("############################### Begin Operations On CityTest #####################"); 
+		oprations(LogLacation, "CityTest",DatabaseLocation, fields, increaseColoumn);
+		 
+		 
+		//information needed for table Country
+		 LogLacation="Log_8213af0e-2f72-40a0-bbf9-2201bff18424.txt";
+		 DatabaseLocation="CountryTest1.csv";
+		 fields.clear();
+		 String fs2[]={"ID","Name","Continent","Region","SurfaceArea"
+					,"IndepYear","Population","LifeExpectancy", "GNP","GNPOld","LocalName","GovernmentForm",
+					"HeadOfState","Capital","Code2"};
 		
+			for(int i=0;i<fs2.length;i++){
+				fields.add(fs2[i]);
+			}
+		 increaseColoumn=6;
+		 System.out.println("############################### Begin Operations On CountryTest ########################"); 
+		 oprations(LogLacation,"CountryTest", DatabaseLocation, fields, increaseColoumn);
 		
-		AnnualIncreaseTrigger(city,4,log);
-		
+	}
+	/**
+	 * Two cases:
+	 * case 1:if data in DatabaseLocation cannot be found, we can regarded this is a isolated machine and 
+	 * need to build relation from log
+	 * case 2: if data in DatabaseLocation can be found, we can build relation from data.
+	 * 		for this case, we need to create table, insert records, update by multiplying 1.02, and write logs
+	 * 		for all these operations
+	 * @param LogLacation
+	 * @param recoverName
+	 * @param DatabaseLocation
+	 * @param fields
+	 * @param increaseColoumn: which 
+	 */
+	public static void oprations(String LogLacation, String recoverName, String DatabaseLocation,
+			ArrayList<String> fields, int increaseColoumn) {
+		Path p=Paths.get(DatabaseLocation);
+		if(Files.exists(p)){
+			System.out.println("Build Relation from data");
+		Log log = transactionsForTable(DatabaseLocation, fields, increaseColoumn);
+		writeLog(log);
+		System.out.println("Log "+log.getName()+" is generated");
+		}
 		//System.out.println(log.toString());
+		else{
+			System.out.println("Build Relation from log");
+		recoverRelation(LogLacation,recoverName);
+		}
+	}
+	/**
+	 * Recover data from log
+	 * @param location
+	 * @param relationName
+	 */
+	public static void recoverRelation(String location,String relationName) {
+		
+		RecoveryBasedOnLog recovery=new RecoveryBasedOnLog(location, relationName);
+		recovery.recovery();
+		System.out.println("Relation "+recovery.relation.relationName+" is recovered successfully from "+location);
+	}
+	/**
+	 * write the log into file system
+	 * @param log
+	 */
+	public static void writeLog(Log log) {
 		try {
 		      //create a buffered reader that connects to the console, we use it so we can read lines
-				FileWriter fw = new FileWriter("file.txt");
+				FileWriter fw = new FileWriter(log.getName()+".txt");
 				fw.write(log.toString());
 				fw.close();
 		   }
 		      catch(IOException e1) {
 		        System.out.println("Error during reading/writing");
 		   }
-		RecoveryBasedOnLog recovery=new RecoveryBasedOnLog("file.txt", "CityRecovery", "CityRecovery1");
-		recovery.recovery();
-		
+	}
+	/**
+	 * Create a relation for data in tableLocation, and update the population field by multiplying 1.02
+	 * @param tableLocation
+	 * @param fields
+	 * @param column
+	 * @return log 
+	 */
+	public static Log transactionsForTable(String tableLocation,ArrayList<String> fields, int column) {
+		Log log=new Log();
+		Relation r=loadFile(tableLocation, fields, log);
+		AnnualIncreaseTrigger(r,column,log);
+		return log;
 	}
 	
 

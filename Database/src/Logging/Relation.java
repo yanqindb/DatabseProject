@@ -39,7 +39,7 @@ class Relation{
 	
 
 	//Relation name
-	public String relationName = null;
+	public String relationName;
 	
 	//Length of the relation in bytes
 	private int length = 0;
@@ -57,21 +57,20 @@ class Relation{
 	
 	//Suppose each block contains 10 records
 	
-	
+	/*records in relation*/
 	ArrayList<Record> records;
 	
-	
+	/*fields name*/
 	ArrayList<String> fields;
 	
-	ArrayList<String> fieldsType;
 	/**
 	 * Create a relation table, and store it in disk
 	 * @param relationName
 	 */
-	public Relation(String relationName){
+	public Relation(String relationN){
 		
-		this.relationName = relationName.split("\\.")[0];
-		
+		this.relationName = relationN.split("\\.")[0];
+		this.fields=new ArrayList<String>();
 	}
 	/**
 	 * Put a tuple
@@ -161,11 +160,19 @@ class Relation{
 			e.printStackTrace();
 		}
 	}
+	/**
+	 * add a record to relation
+	 * @param r
+	 */
 	public void addRecord(Record r){
 		this.records.add(r);
 	}
+	/**
+	 * writing helper function
+	 */
 	public String toString(){
 		String s="";
+		if(this.records.isEmpty()==false){
 		for(Record r:this.records){
 			for(int i=0;i<r.value.size();i++){
 				if(i<r.value.size()-1)
@@ -176,13 +183,18 @@ class Relation{
 			}
 			s+="\n";
 		}
+			
+		}
 		return s;
 	}
+	/**
+	 * wrtite the relation to file system
+	 */
 	public void writeBack(){
 
 		try {
 		      //create a buffered reader that connects to the console, we use it so we can read lines
-				FileWriter fw = new FileWriter(this.relationName+".txt");
+				FileWriter fw = new FileWriter("Recovery of "+this.relationName+".txt");
 				fw.write(this.toString());
 				fw.close();
 		   }
@@ -192,13 +204,26 @@ class Relation{
 	}
 
 }
-
+/**
+ * Definition Record class
+ * @author Yan Wang & Zishan Qin
+ *
+ */
 class Record {
+	/*columns of this record*/
 	ArrayList value;
 	
+	/**
+	 * Constructor 1: build record directly from another record
+	 * @param externalRecord
+	 */
 	public Record(Record externalRecord){
 		value=(ArrayList) externalRecord.value.clone();
 	}
+	/**
+	 * Constructor 2: build record from string array
+	 * @param externalRecord
+	 */
 	public Record(String[] split) {
 		// TODO Auto-generated constructor stub
 		value=new ArrayList();
@@ -206,10 +231,18 @@ class Record {
 			value.add(split[i]);
 		}
 	}
+	/**
+	 * set some field value to value of o
+	 * @param col: column index
+	 * @param o: new value
+	 */
 	public void setValue(int col, Object o){
 		this.value.remove(col);
 		this.value.add(col,o);
 	}
+	/**
+	 * output helper
+	 */
 	public String  toString(){
 		String s = "";
 		for(Object o: value){

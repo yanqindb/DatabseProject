@@ -13,8 +13,8 @@ public class RecoveryBasedOnLog {
 	//Log log;
 	ArrayList<String> log;
 	Relation relation;
-	String locationToSave;
-	public RecoveryBasedOnLog(String logLocation, String relationName, String Relationlocation){
+	//String locationToSave;
+	public RecoveryBasedOnLog(String logLocation, String relationName){
 		//log=l;
 		ObjectInputStream ois = null;
 		BufferedReader reader = null;
@@ -22,8 +22,8 @@ public class RecoveryBasedOnLog {
 		Path pathRelation = Paths.get(logLocation);
 		log=new ArrayList<String>();
 		
-		relation = new Relation(relationName);
-		relation.open();
+		//relation = new Relation(relationName);
+		//relation.open();
 		try {		 
 			Charset charset=Charset.forName("UTF-8");;
 			reader = Files.newBufferedReader(pathRelation, charset);
@@ -35,19 +35,43 @@ public class RecoveryBasedOnLog {
 			// TODO Auto-generated catch block
 			
 		}
-		locationToSave=Relationlocation;
+		//locationToSave=Relationlocation;
 	}
 	public void parseLogToTransaction(String i){
 		String[] fields=i.split(":");
 		String Type=fields[0].split("_")[0];
 		String fieldsUpdate=fields[1];
-		String oldValue=fields[2];
-		String newValue=fields[3];
-		if(Type.equals("Insert")){
-			
+		
+		
+		if(Type.equals("Create")){
+			String[] fieldsName=fieldsUpdate.split("/");
+			ArrayList<String> fs=new ArrayList<String>();
+			for(int j=1;j<fieldsName.length;j++){
+				fs.add(fieldsName[j]);
+			}
+			CreateTableTransaction createT=new CreateTableTransaction(fs, fieldsName[0]);
+			this.relation=createT.getRelation();
+			relation.open();
+		}
+		else if(Type.equals("Insert")){
+			try{
+				String oldValue=fields[2];
+				String newValue=fields[3];
+			if(this.relation==null){
+				throw new Exception("Relation doesn't exist");
+			}
 			InsertTransaction insertT=new InsertTransaction(relation, newValue.split("/"));
+			}catch(Exception e ){
+				
+			}
 		}
 		else if(Type.equals("Update")){
+			try{
+				String oldValue=fields[2];
+				String newValue=fields[3];
+				if(this.relation==null){
+					throw new Exception("Relation doesn't exist");
+				}
 			String[] updateLocation=fieldsUpdate.split("/");
 			String[] updateValues=newValue.split("/");
 			int row=Integer.parseInt(updateLocation[1]);
@@ -61,6 +85,9 @@ public class RecoveryBasedOnLog {
 			}
 			
 			UpdateTransaction updateT=new UpdateTransaction(relation, columns, row, values);
+			}catch(Exception e ){
+				
+			}
 		}
 	}
 	public void recovery(){
