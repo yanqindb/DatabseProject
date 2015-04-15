@@ -98,7 +98,7 @@ public  static Relation loadFile( String tableName, ArrayList<String> fs, Log lo
 		
 	}
 	
-	public static void testBasic() {
+	public static void testExtraWork() {
 		//information needed for table City
 		String LogLacation="Log_f9428c84-b103-4080-bcec-a6dc45d35adb.txt";
 		String DatabaseLocation="CityTest.csv";
