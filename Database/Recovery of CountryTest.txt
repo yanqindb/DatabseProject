@@ -1,0 +1,10 @@
+ABW,Aruba,North America,Caribbean,193,NULL,105060,78.4,828,793,Aruba,Nonmetropolitan Territory of The Netherlands,Beatrix,129,AW
+AFG,Afghanistan,Asia,Southern and Central Asia,652090,1919,23174400,45.9,5976,NULL,AfganistanAfqanestan,Islamic Emirate,Mohammad Omar,1,AF
+AGO,Angola,Africa,Central Africa,1246700,1975,13135560,38.3,6648,7984,Angola,Republic,Jos Eduardo dos Santos,56,AO
+AIA,Anguilla,North America,Caribbean,96,NULL,8160,76.1,63.2,NULL,Anguilla,Dependent Territory of the UK,Elisabeth ,62,AI
+ALB,Albania,Europe,Southern Europe,28748,1912,3469224,71.6,3205,2500,Shqipia,Republic,Rexhep Mejdani,34,AL
+AND,Andorra,Europe,Southern Europe,468,1278,79560,83.5,1630,NULL,Andorra,Parliamentary Coprincipality,tt,55,AD
+ANT,Netherlands Antilles,North America,Caribbean,800,NULL,221340,74.7,1941,NULL,Nederlandse Antillen,Nonmetropolitan Territory of The Netherlands,Beatrix,33,AN
+ARE,United Arab Emirates,Asia,Middle East,83600,1971,2489820,74.1,37966,36846,A,Emirate Federation,Zayid bin Sulta,65,AE
+ARG,Argentina,South America,South America,2780400,1816,37772640,75.1,340238,323310,Argentina,Federal Republic,Fernando,69,AR
+ARM,Armenia,Asia,Middle East,29800,1991,3590400,66.4,1813,1627,Hajastan,Republic,Robert,126,AM

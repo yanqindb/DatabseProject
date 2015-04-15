@@ -1,0 +1,10 @@
+1,Kabul,AFG,Kabol,1815600
+2,Qandahar,AFG,Qandahar,242250
+3,Herat,AFG,Herat,190536
+4,Mazar-e-Sharif,AFG,Balkh,130356
+5,Amsterdam,NLD,Noord-Holland,745824
+6,Rotterdam,NLD,Zuid-Holland,605187
+7,Haag,NLD,Zuid-Holland,449718
+8,Utrecht,NLD,Utrecht,239009
+9,Eindhoven,NLD,Noord-Brabant,205880
+10,Tilburg,NLD,Noord-Brabant,197103
