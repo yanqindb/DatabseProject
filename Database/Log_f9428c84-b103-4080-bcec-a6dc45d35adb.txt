@@ -1,0 +1,21 @@
+Create_11c113c9-4303-42a2-9ffb-4d822b9ec356:CityTest/Code/Name/Country Code/District/Population/::
+Insert_71ab9dfc-a907-4bd6-9b8b-5ea160532cc2:::1/Kabul/AFG/Kabol/1815600/
+Insert_eff785c5-232e-494f-8cdb-5682d1644a6d:::2/Qandahar/AFG/Qandahar/242250/
+Insert_7fc3792a-05bd-4738-a46b-15b201349412:::3/Herat/AFG/Herat/190536/
+Insert_80031ee4-2ed9-4f21-8fd5-751aa74521c1:::4/Mazar-e-Sharif/AFG/Balkh/130356/
+Insert_382412c7-ffc2-4717-89a2-989de09b2c33:::5/Amsterdam/NLD/Noord-Holland/745824/
+Insert_23b7a33f-5651-4fa7-ae73-5bb1712e98ea:::6/Rotterdam/NLD/Zuid-Holland/605187/
+Insert_9dbdd56b-8e20-42ed-8021-371bae6915c6:::7/Haag/NLD/Zuid-Holland/449718/
+Insert_58c9d989-a9d7-4001-835c-59e37e6ba479:::8/Utrecht/NLD/Utrecht/239009/
+Insert_2cb9ae1a-6011-45e3-8b14-87eac447c999:::9/Eindhoven/NLD/Noord-Brabant/205880/
+Insert_46bfd13a-f846-4b29-8df9-6a90e08c4734:::10/Tilburg/NLD/Noord-Brabant/197103/
+Update_8cf811a0-925a-4f3d-ada1-ff76b6b8314a:CityTest/0/4:1/Kabul/AFG/Kabol/1780000/:1/Kabul/AFG/Kabol/1815600/
+Update_70a8deb4-424a-472e-bc68-bd81f6ca6d66:CityTest/1/4:2/Qandahar/AFG/Qandahar/237500/:2/Qandahar/AFG/Qandahar/242250/
+Update_746b6878-ed63-47d2-b063-9a06bfc8ed53:CityTest/2/4:3/Herat/AFG/Herat/186800/:3/Herat/AFG/Herat/190536/
+Update_8aea9c55-2000-436b-b68f-567c6cf1979a:CityTest/3/4:4/Mazar-e-Sharif/AFG/Balkh/127800/:4/Mazar-e-Sharif/AFG/Balkh/130356/
+Update_df4ef4c5-b357-47c7-a02e-f756f8ae8bba:CityTest/4/4:5/Amsterdam/NLD/Noord-Holland/731200/:5/Amsterdam/NLD/Noord-Holland/745824/
+Update_cf79dfd6-6e36-4b43-b05b-673e54de42ed:CityTest/5/4:6/Rotterdam/NLD/Zuid-Holland/593321/:6/Rotterdam/NLD/Zuid-Holland/605187/
+Update_5b343057-763b-40d5-abbe-29d1ccbd885d:CityTest/6/4:7/Haag/NLD/Zuid-Holland/440900/:7/Haag/NLD/Zuid-Holland/449718/
+Update_26bf6c69-9444-4640-8883-e5455c1d47ed:CityTest/7/4:8/Utrecht/NLD/Utrecht/234323/:8/Utrecht/NLD/Utrecht/239009/
+Update_f66b15c7-9096-4866-9006-547f841bc1e8:CityTest/8/4:9/Eindhoven/NLD/Noord-Brabant/201843/:9/Eindhoven/NLD/Noord-Brabant/205880/
+Update_f6d832fe-8f53-4ad5-9c40-01eb1632cb78:CityTest/9/4:10/Tilburg/NLD/Noord-Brabant/193238/:10/Tilburg/NLD/Noord-Brabant/197103/

@@ -14,6 +14,29 @@ public class RecoveryBasedOnLog {
 	ArrayList<String> log;
 	Relation relation;
 	//String locationToSave;
+	public RecoveryBasedOnLog(String logLocation, String relationName, Relation r){
+		//log=l;
+		ObjectInputStream ois = null;
+		BufferedReader reader = null;
+		//Get the path of the relation
+		Path pathRelation = Paths.get(logLocation);
+		log=new ArrayList<String>();
+		
+		relation = r;
+		//relation.open();
+		try {		 
+			Charset charset=Charset.forName("UTF-8");;
+			reader = Files.newBufferedReader(pathRelation, charset);
+			String tempString;
+			while ((tempString = reader.readLine()) != null) {
+				this.log.add(tempString);
+			}
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			
+		}
+		//locationToSave=Relationlocation;
+	}
 	public RecoveryBasedOnLog(String logLocation, String relationName){
 		//log=l;
 		ObjectInputStream ois = null;

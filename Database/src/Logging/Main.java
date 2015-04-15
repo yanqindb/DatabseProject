@@ -98,9 +98,9 @@ public  static Relation loadFile( String tableName, ArrayList<String> fs, Log lo
 		
 	}
 	
-	public static void main(String[] args) {
+	public static void testBasic() {
 		//information needed for table City
-		String LogLacation="Log_6da543ca-7c0d-4308-87a3-4280de60abf0.txt";
+		String LogLacation="Log_f9428c84-b103-4080-bcec-a6dc45d35adb.txt";
 		String DatabaseLocation="CityTest.csv";
 		ArrayList<String> fields=new ArrayList<String>();
 		  String[] fs={"Code","Name","Country Code","District","Population"};
@@ -115,24 +115,26 @@ public  static Relation loadFile( String tableName, ArrayList<String> fs, Log lo
 			 // case 2: if data in DatabaseLocation can be found, we can build relation from data.
 			 // 		for this case, we need to create table, insert records, update by multiplying 1.02, and write logs
 			 // 		for all these operations
-		System.out.println("############################### Begin Operations On CityTest #####################"); 
+		System.out.println("########################## Begin Operations On CityTest #####################"); 
 		oprations(LogLacation, "CityTest",DatabaseLocation, fields, increaseColoumn);
-		 
-		 
-		//information needed for table Country
-		 LogLacation="Log_8213af0e-2f72-40a0-bbf9-2201bff18424.txt";
-		 DatabaseLocation="CountryTest1.csv";
-		 fields.clear();
-		 String fs2[]={"ID","Name","Continent","Region","SurfaceArea"
-					,"IndepYear","Population","LifeExpectancy", "GNP","GNPOld","LocalName","GovernmentForm",
-					"HeadOfState","Capital","Code2"};
-		
-			for(int i=0;i<fs2.length;i++){
-				fields.add(fs2[i]);
-			}
-		 increaseColoumn=6;
-		 System.out.println("############################### Begin Operations On CountryTest ########################"); 
-		 oprations(LogLacation,"CountryTest", DatabaseLocation, fields, increaseColoumn);
+		DatabaseLocation="notavailablenow";
+		oprations(LogLacation, "CityTest",DatabaseLocation, fields, increaseColoumn);
+//		 
+//		 
+//		//information needed for table Country
+//		 LogLacation="Log_8213af0e-2f72-40a0-bbf9-2201bff18424.txt";
+//		 DatabaseLocation="CountryTest1.csv";
+//		 fields.clear();
+//		 String fs2[]={"ID","Name","Continent","Region","SurfaceArea"
+//					,"IndepYear","Population","LifeExpectancy", "GNP","GNPOld","LocalName","GovernmentForm",
+//					"HeadOfState","Capital","Code2"};
+//		
+//			for(int i=0;i<fs2.length;i++){
+//				fields.add(fs2[i]);
+//			}
+//		 increaseColoumn=6;
+//		 System.out.println("############################### Begin Operations On CountryTest ########################"); 
+//		 oprations(LogLacation,"CountryTest", DatabaseLocation, fields, increaseColoumn);
 		
 	}
 	/**
@@ -202,6 +204,64 @@ public  static Relation loadFile( String tableName, ArrayList<String> fs, Log lo
 		AnnualIncreaseTrigger(r,column,log);
 		return log;
 	}
+	public static void main(String[] args){
+		System.out.println("############################### Extra work ##################################"); 
+		//testBasic();
+		//String LogLacation="Log_6da543ca-7c0d-4308-87a3-4280de60abf0.txt";
+		String DatabaseLocation="CityTest.csv";
+		int increaseColoumn=4;
+		Log log=new Log();
+		ObjectInputStream ois = null;
+		BufferedReader reader = null;
+		//Get the path of the relation
+		Path pathRelation = Paths.get(DatabaseLocation);
+		Relation relation =new Relation(DatabaseLocation);		
+		relation.open();
+		InsertTransaction insertT;
+		String tempString;
+		System.out.println("############################### Begin Operations On CityTest #####################"); 
+		try{
+			Charset charset=Charset.forName("UTF-8");;
+			reader = Files.newBufferedReader(pathRelation, charset);
+			while ((tempString = reader.readLine()) != null) {
+				insertT=new InsertTransaction(relation, tempString);
+				
+			}
+			AnnualIncreaseTrigger(relation, increaseColoumn, log);
+			writeLog(log);
+			System.out.println("Log "+log.getName()+" is generated");
+		
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+		}
+		 DatabaseLocation="CountryTest.csv";
+		 increaseColoumn=6;
+		 log=new Log();
+		ObjectInputStream ois1 = null;
+		BufferedReader reader1 = null;
+		//Get the path of the relation
+		Path pathRelation1 = Paths.get(DatabaseLocation);
+		Relation relation1 =new Relation(DatabaseLocation);		
+		relation1.open();
+		InsertTransaction insertT1;
+		String tempString1;
+		System.out.println("############################### Begin Operations On CountryTest #####################"); 
+		try{
+			Charset charset=Charset.forName("UTF-8");;
+			reader1 = Files.newBufferedReader(pathRelation1, charset);
+			while ((tempString1 = reader1.readLine()) != null) {
+				insertT1=new InsertTransaction(relation1, tempString1);
+				
+			}
+			AnnualIncreaseTrigger(relation1, increaseColoumn, log);
+			writeLog(log);
+			System.out.println("Log "+log.getName()+" is generated");
+		
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+		}
+		
+	}
 	
-
+	
 }
